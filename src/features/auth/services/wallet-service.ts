@@ -1,0 +1,107 @@
+import { Keypair } from "@stellar/stellar-sdk";
+import { z } from "zod";
+
+import { isValidSecretKey } from "@/lib/stellar";
+
+import { decryptSecret, encryptSecret } from "./wallet-crypto";
+import {
+  InvalidSecretKeyError,
+  NoStoredWalletError,
+  PasswordTooWeakError,
+  WalletAlreadyExistsError,
+} from "./wallet-errors";
+import {
+  clearStoredWallet,
+  readStoredWallet,
+  writeStoredWallet,
+  type StoredWallet,
+} from "./wallet-storage";
+
+const passwordSchema = z.string().min(8, "Password must be at least 8 characters.");
+
+const secretKeySchema = z
+  .string()
+  .trim()
+  .refine(isValidSecretKey, { message: "That doesn't look like a valid Stellar secret key." });
+
+export interface UnlockedWallet {
+  publicKey: string;
+  keypair: Keypair;
+}
+
+export interface CreatedWallet extends UnlockedWallet {
+  secret: string;
+}
+
+function assertStrongPassword(password: string): void {
+  const result = passwordSchema.safeParse(password);
+  if (!result.success) {
+    throw new PasswordTooWeakError(result.error.issues[0]?.message ?? "Password is too weak.");
+  }
+}
+
+function parseSecretKey(secretKey: string): string {
+  const result = secretKeySchema.safeParse(secretKey);
+  if (!result.success) {
+    throw new InvalidSecretKeyError();
+  }
+  return result.data;
+}
+
+async function persistKeypair(keypair: Keypair, password: string): Promise<void> {
+  const encryptedSecret = await encryptSecret(keypair.secret(), password);
+  const wallet: StoredWallet = {
+    publicKey: keypair.publicKey(),
+    encryptedSecret,
+    createdAt: new Date().toISOString(),
+  };
+  writeStoredWallet(wallet);
+}
+
+export function hasStoredWallet(): boolean {
+  return readStoredWallet() !== null;
+}
+
+export function getStoredPublicKey(): string | null {
+  return readStoredWallet()?.publicKey ?? null;
+}
+
+export async function createWallet(password: string): Promise<CreatedWallet> {
+  if (hasStoredWallet()) {
+    throw new WalletAlreadyExistsError();
+  }
+  assertStrongPassword(password);
+
+  const keypair = Keypair.random();
+  await persistKeypair(keypair, password);
+
+  return { publicKey: keypair.publicKey(), keypair, secret: keypair.secret() };
+}
+
+export async function importWallet(secretKey: string, password: string): Promise<UnlockedWallet> {
+  if (hasStoredWallet()) {
+    throw new WalletAlreadyExistsError();
+  }
+  assertStrongPassword(password);
+
+  const keypair = Keypair.fromSecret(parseSecretKey(secretKey));
+  await persistKeypair(keypair, password);
+
+  return { publicKey: keypair.publicKey(), keypair };
+}
+
+export async function unlockWallet(password: string): Promise<UnlockedWallet> {
+  const stored = readStoredWallet();
+  if (!stored) {
+    throw new NoStoredWalletError();
+  }
+
+  const secret = await decryptSecret(stored.encryptedSecret, password);
+  const keypair = Keypair.fromSecret(secret);
+
+  return { publicKey: keypair.publicKey(), keypair };
+}
+
+export function removeStoredWallet(): void {
+  clearStoredWallet();
+}
