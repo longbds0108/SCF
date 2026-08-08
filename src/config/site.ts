@@ -1,4 +1,4 @@
 export const siteConfig = {
-  name: "Stellar Wallet",
+  name: "XLMFlow",
   description: "A production-ready Stellar wallet with passkey authentication.",
 } as const;

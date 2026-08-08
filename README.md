@@ -1,4 +1,4 @@
-# Stellar Wallet
+# XLMFlow
 
 A Stellar wallet built with Next.js 15, React 19, TypeScript, Tailwind CSS, shadcn/ui, React
 Query, Zustand, and Zod. Classic Stellar payments (XLM and issued assets like USDC), trustline

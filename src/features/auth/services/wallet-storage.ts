@@ -1,6 +1,6 @@
 import type { EncryptedPayload } from "./wallet-crypto";
 
-const STORAGE_KEY = "stellar-wallet:wallet:v1";
+const STORAGE_KEY = "xlmflow:wallet:v1";
 
 export interface StoredWallet {
   publicKey: string;

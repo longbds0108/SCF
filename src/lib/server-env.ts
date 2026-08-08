@@ -15,7 +15,7 @@ import { z } from "zod";
  */
 const serverEnvSchema = z.object({
   WEBAUTHN_RP_ID: z.string().min(1).default("localhost"),
-  WEBAUTHN_RP_NAME: z.string().min(1).default("Stellar Wallet"),
+  WEBAUTHN_RP_NAME: z.string().min(1).default("XLMFlow"),
   WEBAUTHN_ORIGIN: z.string().url().default("http://localhost:3000"),
 });
 

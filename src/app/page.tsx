@@ -32,7 +32,7 @@ export default function Home() {
   if (!isConnected) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
-        <h1 className="text-2xl font-semibold">Stellar Wallet</h1>
+        <h1 className="text-2xl font-semibold">XLMFlow</h1>
         <div className="w-full max-w-sm">
           <WalletPanel />
         </div>
