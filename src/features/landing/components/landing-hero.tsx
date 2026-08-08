@@ -2,32 +2,72 @@
 
 import { Fingerprint, Globe, Shield, Zap } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useRef } from "react";
+
+import { gsap } from "../lib/gsap";
 
 export function LandingHero() {
+  const headerRef = useRef<HTMLElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const headlineRef = useRef<HTMLHeadingElement>(null);
+  const subtextRef = useRef<HTMLParagraphElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+  const trustRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      gsap
+        .timeline({ defaults: { ease: "power3.out" } })
+        .from(headlineRef.current, { opacity: 0, y: 24, duration: 0.9 })
+        .from(subtextRef.current, { opacity: 0, y: 20, duration: 0.8 }, "-=0.55")
+        .from(ctaRef.current, { opacity: 0, y: 16, duration: 0.7 }, "-=0.5")
+        .from(trustRef.current, { opacity: 0, y: 12, duration: 0.6 }, "-=0.4");
+
+      gsap.to(imageRef.current, {
+        yPercent: 15,
+        ease: "none",
+        scrollTrigger: {
+          trigger: header,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        },
+      });
+    }, header);
+
+    return () => ctx.revert();
+  }, []);
+
   function scrollToGetStarted() {
     document.getElementById("get-started")?.scrollIntoView({ behavior: "smooth" });
   }
 
   return (
-    <header className="relative overflow-hidden bg-foreground">
+    <header ref={headerRef} className="relative overflow-hidden bg-foreground">
       <div className="relative h-[min(78vh,640px)] min-h-[440px]">
         <Image
+          ref={imageRef}
           src="/images/coastal-cliffs.jpg"
           alt="Coastal cliffs meeting the ocean"
           fill
           priority
-          className="object-cover"
+          className="object-cover will-change-transform"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/15 to-black/85" />
         <div className="absolute inset-0 flex flex-col items-center justify-end px-6 pb-16 text-center">
-          <h1 className="max-w-2xl text-balance text-4xl font-bold text-white sm:text-5xl">
+          <h1 ref={headlineRef} className="max-w-2xl text-balance text-4xl font-bold text-white sm:text-5xl">
             Global money, at local speed.
           </h1>
-          <p className="mt-4 max-w-md text-balance text-white/80">
+          <p ref={subtextRef} className="mt-4 max-w-md text-balance text-white/80">
             Hold XLM and USDC in one wallet. Send anywhere, arrive in seconds — settled on
             Stellar, secured by a passkey instead of a password.
           </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <div ref={ctaRef} className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <button
               type="button"
               onClick={scrollToGetStarted}
@@ -46,7 +86,10 @@ export function LandingHero() {
       </div>
 
       <div className="border-t border-white/10 bg-foreground py-5">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-10 gap-y-3 px-6">
+        <div
+          ref={trustRef}
+          className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-10 gap-y-3 px-6"
+        >
           <span className="flex items-center gap-2 text-xs font-semibold text-background/70">
             <Globe className="h-4 w-4" /> Built on Stellar
           </span>

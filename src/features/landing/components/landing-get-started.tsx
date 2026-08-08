@@ -2,10 +2,17 @@
 
 import { WalletPanel } from "@/features/auth";
 
+import { useScrollReveal } from "../hooks/use-scroll-reveal";
+
 export function LandingGetStarted() {
+  const gridRef = useScrollReveal<HTMLDivElement>({ stagger: true });
+
   return (
     <section id="get-started" className="border-t border-border bg-secondary/50 py-20">
-      <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2">
+      <div
+        ref={gridRef}
+        className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2"
+      >
         <div>
           <span className="text-xs font-bold uppercase tracking-widest text-primary">
             Get started

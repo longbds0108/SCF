@@ -3,6 +3,8 @@
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 
+import { useScrollReveal } from "../hooks/use-scroll-reveal";
+
 const FAQS = [
   {
     q: "Is this real money, on a real network?",
@@ -24,13 +26,17 @@ const FAQS = [
 
 export function LandingFaq() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const listRef = useScrollReveal<HTMLDivElement>({ stagger: true });
 
   return (
     <section id="faq" className="mx-auto max-w-3xl px-6 py-20">
       <h2 className="mb-10 text-center text-3xl font-bold text-foreground">
         Frequently asked questions
       </h2>
-      <div className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-card">
+      <div
+        ref={listRef}
+        className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-card"
+      >
         {FAQS.map((item, index) => {
           const isOpen = openIndex === index;
           return (

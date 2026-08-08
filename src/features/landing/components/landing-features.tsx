@@ -2,6 +2,8 @@
 
 import { Fingerprint, Globe2, History, Layers, ShieldCheck, TerminalSquare } from "lucide-react";
 
+import { useScrollReveal } from "../hooks/use-scroll-reveal";
+
 const FEATURES = [
   {
     icon: Layers,
@@ -43,6 +45,8 @@ const FEATURES = [
 ];
 
 export function LandingFeatures() {
+  const gridRef = useScrollReveal<HTMLDivElement>({ stagger: true });
+
   return (
     <section id="features" className="mx-auto max-w-5xl px-6 py-20">
       <div className="mb-10 max-w-xl">
@@ -54,7 +58,7 @@ export function LandingFeatures() {
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+      <div ref={gridRef} className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         {FEATURES.map((feature) => (
           <div
             key={feature.title}
