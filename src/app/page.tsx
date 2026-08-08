@@ -2,13 +2,9 @@
 
 import Image from "next/image";
 
-import {
-  PasskeyLoginGate,
-  PasskeySecurityCard,
-  useWalletSession,
-  WalletPanel,
-} from "@/features/auth";
+import { PasskeyLoginGate, PasskeySecurityCard, useWalletSession } from "@/features/auth";
 import { usePasskeySessionStatus } from "@/features/auth/hooks/use-passkey-session";
+import { LandingPage } from "@/features/landing";
 import { SendUsdcDialog, SendXlmDialog } from "@/features/send";
 import {
   NativeBalanceCard,
@@ -32,24 +28,7 @@ export default function Home() {
   }
 
   if (!isConnected) {
-    return (
-      <main className="relative flex min-h-screen flex-col items-center justify-center gap-6 overflow-hidden p-8">
-        <div className="absolute inset-0 -z-10">
-          <Image
-            src="/images/coastal-cliffs.jpg"
-            alt=""
-            fill
-            priority
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-background" />
-        </div>
-        <h1 className="text-3xl font-bold text-white drop-shadow-md">XLMFlow</h1>
-        <div className="w-full max-w-sm drop-shadow-2xl">
-          <WalletPanel />
-        </div>
-      </main>
-    );
+    return <LandingPage />;
   }
 
   return (
