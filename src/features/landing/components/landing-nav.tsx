@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 
+import { LogoMark } from "@/components/logo-mark";
+
 import { ScrollTrigger } from "../lib/gsap";
 
 export function LandingNav() {
@@ -34,10 +36,7 @@ export function LandingNav() {
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
         <div className="flex items-center gap-2">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <svg viewBox="0 0 32 32" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.4">
-              <path d="M5 21c2-8 8-14 22-13" strokeLinecap="round" />
-              <circle cx="27" cy="8" r="2.6" fill="currentColor" stroke="none" />
-            </svg>
+            <LogoMark className="h-4 w-4" />
           </span>
           <span className="text-sm font-semibold">XLMFlow</span>
         </div>
