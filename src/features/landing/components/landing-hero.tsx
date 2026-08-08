@@ -4,7 +4,15 @@ import { Fingerprint, Globe, Shield, Zap } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 
+import { useMarquee } from "../hooks/use-marquee";
 import { gsap } from "../lib/gsap";
+
+const TRUST_BADGES = [
+  { icon: Globe, label: "Built on Stellar" },
+  { icon: Zap, label: "~5 second settlement" },
+  { icon: Fingerprint, label: "Passkey secured" },
+  { icon: Shield, label: "Non-custodial" },
+];
 
 export function LandingHero() {
   const headerRef = useRef<HTMLElement>(null);
@@ -13,6 +21,7 @@ export function LandingHero() {
   const subtextRef = useRef<HTMLParagraphElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
   const trustRef = useRef<HTMLDivElement>(null);
+  const marqueeTrackRef = useMarquee<HTMLDivElement>(26);
 
   useEffect(() => {
     const header = headerRef.current;
@@ -85,23 +94,24 @@ export function LandingHero() {
         </div>
       </div>
 
-      <div className="border-t border-white/10 bg-foreground py-5">
-        <div
-          ref={trustRef}
-          className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-10 gap-y-3 px-6"
-        >
-          <span className="flex items-center gap-2 text-xs font-semibold text-background/70">
-            <Globe className="h-4 w-4" /> Built on Stellar
-          </span>
-          <span className="flex items-center gap-2 text-xs font-semibold text-background/70">
-            <Zap className="h-4 w-4" /> ~5 second settlement
-          </span>
-          <span className="flex items-center gap-2 text-xs font-semibold text-background/70">
-            <Fingerprint className="h-4 w-4" /> Passkey secured
-          </span>
-          <span className="flex items-center gap-2 text-xs font-semibold text-background/70">
-            <Shield className="h-4 w-4" /> Non-custodial
-          </span>
+      <div ref={trustRef} className="overflow-hidden border-t border-white/10 bg-foreground py-5">
+        <div ref={marqueeTrackRef} className="flex w-max items-center gap-x-16">
+          {[0, 1].map((copy) => (
+            <div
+              key={copy}
+              aria-hidden={copy === 1}
+              className="flex shrink-0 items-center gap-x-16 pr-16"
+            >
+              {TRUST_BADGES.map(({ icon: Icon, label }) => (
+                <span
+                  key={label}
+                  className="flex items-center gap-2 whitespace-nowrap text-xs font-semibold text-background/70"
+                >
+                  <Icon className="h-4 w-4" /> {label}
+                </span>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
     </header>

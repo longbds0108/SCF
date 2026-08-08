@@ -6,6 +6,7 @@ import { LandingFeatures } from "./landing-features";
 import { LandingFooter } from "./landing-footer";
 import { LandingGetStarted } from "./landing-get-started";
 import { LandingHero } from "./landing-hero";
+import { LandingHowItWorks } from "./landing-how-it-works";
 import { LandingNav } from "./landing-nav";
 
 export function LandingPage() {
@@ -16,6 +17,7 @@ export function LandingPage() {
       <LandingNav />
       <LandingHero />
       <LandingFeatures />
+      <LandingHowItWorks />
       <LandingGetStarted />
       <LandingFaq />
       <LandingFooter />
