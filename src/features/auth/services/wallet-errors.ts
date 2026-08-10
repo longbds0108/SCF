@@ -26,6 +26,13 @@ export class InvalidSecretKeyError extends Error {
   }
 }
 
+export class InvalidRecoveryPhraseError extends Error {
+  constructor() {
+    super("That doesn't look like a valid 12/24-word recovery phrase.");
+    this.name = "InvalidRecoveryPhraseError";
+  }
+}
+
 export class PasswordTooWeakError extends Error {
   constructor(message: string) {
     super(message);

@@ -7,7 +7,9 @@ export { PasskeySecurityCard } from "@/features/auth/components/passkey-security
 
 export { useWalletSession } from "@/features/auth/hooks/use-wallet-session";
 export { useCreateWallet } from "@/features/auth/hooks/use-create-wallet";
+export { useCreateWalletFromPhrase } from "@/features/auth/hooks/use-create-wallet-from-phrase";
 export { useImportWallet } from "@/features/auth/hooks/use-import-wallet";
+export { useImportWalletFromPhrase } from "@/features/auth/hooks/use-import-wallet-from-phrase";
 export { useConnectWallet } from "@/features/auth/hooks/use-connect-wallet";
 export { useDisconnectWallet } from "@/features/auth/hooks/use-disconnect-wallet";
 export { useRemoveWallet } from "@/features/auth/hooks/use-remove-wallet";

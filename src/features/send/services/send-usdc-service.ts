@@ -2,6 +2,8 @@ import { Memo, type Keypair } from "@stellar/stellar-sdk";
 import { PublicKeypair } from "@stellar/typescript-wallet-sdk";
 
 import {
+  assertMemoRequirementSatisfied,
+  baseAccountId,
   describeStellarSubmitError,
   getUsdcAsset,
   getWallet,
@@ -29,9 +31,10 @@ async function assertRecipientCanReceiveUsdc(
   destination: string,
 ): Promise<void> {
   const usdcAsset = getUsdcAsset(network);
+  // Trustlines live on the base account, not on a muxed sub-identity — resolve first.
   const recipientHasTrustline = await hasTrustline(
     network,
-    destination,
+    baseAccountId(destination),
     usdcAsset.code,
     usdcAsset.issuer,
   );
@@ -50,6 +53,7 @@ export async function previewSendUsdc(
   values: SendPaymentFormValues,
 ): Promise<SendUsdcPreview> {
   await assertRecipientCanReceiveUsdc(network, values.destination);
+  await assertMemoRequirementSatisfied(network, values.destination, values.memo);
 
   return {
     destination: values.destination,
@@ -65,6 +69,7 @@ export async function sendUsdc(
   values: SendPaymentFormValues,
 ): Promise<{ hash: string }> {
   await assertRecipientCanReceiveUsdc(network, values.destination);
+  await assertMemoRequirementSatisfied(network, values.destination, values.memo);
 
   const usdcAsset = getUsdcAsset(network);
 

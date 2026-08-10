@@ -3,8 +3,10 @@ import { NativeAssetId, PublicKeypair } from "@stellar/typescript-wallet-sdk";
 
 import {
   accountExists,
+  assertMemoRequirementSatisfied,
   describeStellarSubmitError,
   getWallet,
+  isValidMuxedPublicKey,
   submitTransaction,
 } from "@/lib/stellar";
 import type { StellarNetwork } from "@/lib/network";
@@ -31,6 +33,26 @@ export class DestinationRequiresMinimumBalanceError extends Error {
 }
 
 /**
+ * Checks whether the destination exists, which determines payment vs. create-account. Muxed
+ * (M...) destinations always route to an existing base account — there's no "create it" concept
+ * for them — so that check is skipped entirely rather than resolved to the base account.
+ */
+async function checkDestination(
+  network: StellarNetwork,
+  values: SendPaymentFormValues,
+): Promise<{ willCreateAccount: boolean }> {
+  if (isValidMuxedPublicKey(values.destination)) {
+    return { willCreateAccount: false };
+  }
+
+  const willCreateAccount = !(await accountExists(network, values.destination));
+  if (willCreateAccount && Number(values.amount) < MIN_CREATE_ACCOUNT_BALANCE_XLM) {
+    throw new DestinationRequiresMinimumBalanceError();
+  }
+  return { willCreateAccount };
+}
+
+/**
  * Read-only step: checks whether the destination exists (which determines payment vs.
  * create-account) and returns a display-ready preview. Builds nothing yet — the actual
  * transaction is built fresh in sendXlm() right before signing, so its sequence number and
@@ -40,11 +62,8 @@ export async function previewSendXlm(
   network: StellarNetwork,
   values: SendPaymentFormValues,
 ): Promise<SendXlmPreview> {
-  const willCreateAccount = !(await accountExists(network, values.destination));
-
-  if (willCreateAccount && Number(values.amount) < MIN_CREATE_ACCOUNT_BALANCE_XLM) {
-    throw new DestinationRequiresMinimumBalanceError();
-  }
+  const { willCreateAccount } = await checkDestination(network, values);
+  await assertMemoRequirementSatisfied(network, values.destination, values.memo);
 
   return {
     destination: values.destination,
@@ -61,11 +80,8 @@ export async function sendXlm(
   values: SendPaymentFormValues,
 ): Promise<{ hash: string }> {
   const destination = values.destination;
-  const willCreateAccount = !(await accountExists(network, destination));
-
-  if (willCreateAccount && Number(values.amount) < MIN_CREATE_ACCOUNT_BALANCE_XLM) {
-    throw new DestinationRequiresMinimumBalanceError();
-  }
+  const { willCreateAccount } = await checkDestination(network, values);
+  await assertMemoRequirementSatisfied(network, destination, values.memo);
 
   const builder = await getWallet(network)
     .stellar()

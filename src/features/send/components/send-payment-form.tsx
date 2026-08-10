@@ -56,7 +56,7 @@ export function SendPaymentForm({
         <Label htmlFor="send-destination">Destination</Label>
         <Input
           id="send-destination"
-          placeholder="G..."
+          placeholder="G... or M..."
           value={destination}
           onChange={(event) => setDestination(event.target.value)}
           autoComplete="off"

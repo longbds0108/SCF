@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { isValidPublicKey } from "@/lib/stellar";
+import { isValidDestinationAddress } from "@/lib/stellar";
 
 const MEMO_MAX_BYTES = 28;
 
@@ -14,7 +14,9 @@ export const sendPaymentFormSchema = z.object({
     .string()
     .trim()
     .min(1, "Enter a destination address.")
-    .refine(isValidPublicKey, { message: "Enter a valid Stellar public key (starts with G)." }),
+    .refine(isValidDestinationAddress, {
+      message: "Enter a valid Stellar public key (G...) or muxed account (M...).",
+    }),
   amount: z
     .string()
     .trim()

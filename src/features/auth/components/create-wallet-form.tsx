@@ -5,6 +5,7 @@ import { type FormEvent, useState } from "react";
 
 import { useCompleteWalletSetup } from "@/features/auth/hooks/use-complete-wallet-setup";
 import { useCreateWallet } from "@/features/auth/hooks/use-create-wallet";
+import { useCreateWalletFromPhrase } from "@/features/auth/hooks/use-create-wallet-from-phrase";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,19 +19,93 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+type BackupMethod = "phrase" | "secret";
+
 export function CreateWalletForm() {
   const createWallet = useCreateWallet();
+  const createWalletFromPhrase = useCreateWalletFromPhrase();
   const completeSetup = useCompleteWalletSetup();
 
+  const [method, setMethod] = useState<BackupMethod>("phrase");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [secretRevealed, setSecretRevealed] = useState(false);
   const [backupConfirmed, setBackupConfirmed] = useState(false);
 
+  const activeMutation = method === "phrase" ? createWalletFromPhrase : createWallet;
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (password !== confirmPassword) return;
-    createWallet.mutate(password);
+    activeMutation.mutate(password);
+  }
+
+  if (createWalletFromPhrase.data) {
+    const { publicKey, recoveryPhrase, keypair } = createWalletFromPhrase.data;
+    const words = recoveryPhrase.split(" ");
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Save your recovery phrase</CardTitle>
+          <CardDescription>
+            This is the only time your recovery phrase is shown. Anyone with it has full control
+            of this wallet — write it down somewhere offline, in order.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-1">
+            <Label>Public key</Label>
+            <p className="break-all font-mono text-sm">{publicKey}</p>
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <Label>Recovery phrase</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => setSecretRevealed((value) => !value)}
+                aria-label={secretRevealed ? "Hide recovery phrase" : "Reveal recovery phrase"}
+              >
+                {secretRevealed ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+            {secretRevealed ? (
+              <ol className="grid grid-cols-2 gap-x-4 gap-y-1 rounded-md border border-input p-3 text-sm sm:grid-cols-3">
+                {words.map((word, index) => (
+                  <li key={index} className="font-mono">
+                    <span className="text-muted-foreground">{index + 1}.</span> {word}
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="rounded-md border border-input p-3 font-mono text-sm text-muted-foreground">
+                {words.map(() => "•••••").join(" ")}
+              </p>
+            )}
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={backupConfirmed}
+              onChange={(event) => setBackupConfirmed(event.target.checked)}
+              className="h-4 w-4"
+            />
+            I&apos;ve saved my recovery phrase somewhere safe
+          </label>
+        </CardContent>
+        <CardFooter>
+          <Button
+            className="w-full"
+            disabled={!backupConfirmed}
+            onClick={() => completeSetup(keypair)}
+          >
+            Continue
+          </Button>
+        </CardFooter>
+      </Card>
+    );
   }
 
   if (createWallet.data) {
@@ -102,6 +177,27 @@ export function CreateWalletForm() {
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-1">
+            <Label>Backup method</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={method === "phrase" ? "default" : "outline"}
+                onClick={() => setMethod("phrase")}
+              >
+                Recovery phrase
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={method === "secret" ? "default" : "outline"}
+                onClick={() => setMethod("secret")}
+              >
+                Secret key
+              </Button>
+            </div>
+          </div>
+          <div className="space-y-1">
             <Label htmlFor="create-password">Password</Label>
             <Input
               id="create-password"
@@ -129,9 +225,9 @@ export function CreateWalletForm() {
           {passwordsMismatch && (
             <p className="text-sm text-destructive">Passwords don&apos;t match.</p>
           )}
-          {createWallet.isError && (
+          {activeMutation.isError && (
             <Alert variant="destructive">
-              <AlertDescription>{createWallet.error.message}</AlertDescription>
+              <AlertDescription>{activeMutation.error.message}</AlertDescription>
             </Alert>
           )}
         </CardContent>
@@ -139,9 +235,9 @@ export function CreateWalletForm() {
           <Button
             type="submit"
             className="w-full"
-            disabled={createWallet.isPending || password.length < 8 || password !== confirmPassword}
+            disabled={activeMutation.isPending || password.length < 8 || password !== confirmPassword}
           >
-            {createWallet.isPending ? "Creating…" : "Create wallet"}
+            {activeMutation.isPending ? "Creating…" : "Create wallet"}
           </Button>
         </CardFooter>
       </form>

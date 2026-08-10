@@ -69,6 +69,28 @@ export function isValidPublicKey(value: string): boolean {
   return StrKey.isValidEd25519PublicKey(value);
 }
 
+/** SEP-0023 muxed account address (M...) — routes to a base G... account plus an embedded id. */
+export function isValidMuxedPublicKey(value: string): boolean {
+  return StrKey.isValidMed25519PublicKey(value);
+}
+
+/** Accepts either a plain Stellar account (G...) or a SEP-0023 muxed account (M...). */
+export function isValidDestinationAddress(value: string): boolean {
+  return isValidPublicKey(value) || isValidMuxedPublicKey(value);
+}
+
+/**
+ * The underlying G... account a muxed (M...) address routes through. Horizon's account
+ * endpoints (existence, balances, trustlines, data entries) only accept base ed25519 keys, so
+ * any ledger lookup on a possibly-muxed destination needs to go through this first — the
+ * muxed id itself only matters to the payment operation, not to reading ledger state.
+ */
+export function baseAccountId(destination: string): string {
+  if (!isValidMuxedPublicKey(destination)) return destination;
+  const decoded = StrKey.decodeMed25519PublicKey(destination);
+  return StrKey.encodeEd25519PublicKey(decoded.subarray(0, 32));
+}
+
 export function isValidContractId(value: string): boolean {
   return StrKey.isValidContract(value);
 }
@@ -133,6 +155,45 @@ export async function loadAccount(
   } catch (error) {
     if (isNotFoundError(error)) throw new AccountNotFoundError(network);
     throw error;
+  }
+}
+
+const MEMO_REQUIRED_DATA_KEY = "config.memo_required";
+
+export class DestinationRequiresMemoError extends Error {
+  constructor() {
+    super(
+      "This destination requires a memo to identify your payment (SEP-0029) — add one before " +
+        "sending, or the recipient may not credit your funds.",
+    );
+    this.name = "DestinationRequiresMemoError";
+  }
+}
+
+/**
+ * SEP-0029: some destinations (mainly exchange deposit addresses) flag every incoming payment
+ * as needing a memo, since they use it to credit the right internal customer — sending without
+ * one risks the funds landing but never being credited. A muxed (M...) destination already
+ * carries that same identifying information in its embedded id, so it's exempt: specifying one
+ * already satisfies the reason this check exists.
+ */
+export async function assertMemoRequirementSatisfied(
+  network: StellarNetwork,
+  destination: string,
+  memo: string | undefined,
+): Promise<void> {
+  if (memo?.trim() || isValidMuxedPublicKey(destination)) return;
+
+  let account: Horizon.AccountResponse;
+  try {
+    account = await loadAccount(network, baseAccountId(destination));
+  } catch (error) {
+    if (error instanceof AccountNotFoundError) return;
+    throw error;
+  }
+
+  if (MEMO_REQUIRED_DATA_KEY in account.data_attr) {
+    throw new DestinationRequiresMemoError();
   }
 }
 
