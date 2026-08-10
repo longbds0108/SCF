@@ -5,6 +5,7 @@ import { useState } from "react";
 import { PublicKeyDisplay } from "@/features/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { UsdcIcon } from "@/components/usdc-icon";
 import type { Trustline } from "@/features/trustlines/types/trustline";
 
 interface TrustlineRowProps {
@@ -21,6 +22,7 @@ export function TrustlineRow({ trustline, onRemove, isRemoving }: TrustlineRowPr
     <div className="space-y-2 py-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
+          {trustline.assetCode === "USDC" && <UsdcIcon className="h-4 w-4 shrink-0" />}
           <Badge variant="secondary">{trustline.assetCode}</Badge>
           <span className="text-sm font-medium">{trustline.balance}</span>
         </div>

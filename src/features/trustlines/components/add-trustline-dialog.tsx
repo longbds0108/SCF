@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { UsdcIcon } from "@/components/usdc-icon";
 import { getUsdcAsset } from "@/lib/stellar";
 import type { StellarNetwork } from "@/lib/network";
 
@@ -84,10 +85,11 @@ export function AddTrustlineDialog({ network, trustlines }: AddTrustlineDialogPr
           <Button
             type="button"
             variant="secondary"
-            className="w-full"
+            className="w-full gap-2"
             onClick={() => handleAdd(usdcAsset.code, usdcAsset.issuer)}
             disabled={addTrustlineMutation.isPending}
           >
+            <UsdcIcon className="h-4 w-4 shrink-0" />
             Quick add: USDC
           </Button>
         )}

@@ -3,6 +3,7 @@
 import { useWalletSession } from "@/features/auth";
 import { useAccountOverview } from "@/features/wallet/hooks/use-account-overview";
 import { QueryStateCard } from "@/components/query-state-card";
+import { UsdcIcon } from "@/components/usdc-icon";
 import { useNetworkStore } from "@/stores/network-store";
 
 export function UsdcBalanceCard() {
@@ -19,13 +20,17 @@ export function UsdcBalanceCard() {
       onRetry={refetch}
     >
       {data?.usdc.status === "available" && (
-        <p className="text-lg font-semibold">
+        <p className="flex items-center gap-2 text-lg font-semibold">
+          <UsdcIcon className="h-5 w-5 shrink-0" />
           {data.usdc.balance}{" "}
           <span className="text-sm font-normal text-muted-foreground">USDC</span>
         </p>
       )}
       {data?.usdc.status === "no-trustline" && (
-        <p className="text-sm text-muted-foreground">No USDC trustline</p>
+        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+          <UsdcIcon className="h-5 w-5 shrink-0 opacity-50" />
+          No USDC trustline
+        </p>
       )}
       {data?.usdc.status === "not-configured" && (
         <p className="text-sm text-muted-foreground">USDC issuer not configured for {network}</p>
